@@ -1,19 +1,23 @@
+from logging import error
 import time
 from datetime import datetime
+from connection import insert_stick
 
 def save_stick(stick, delay, coin):
     while True:
         time.sleep(delay)
-        print(stick)
-
         candle = (
-                  coin, # Moeda
-                  delay/60, # Periodicidade
-                  datetime.now(), # Datetime
-                  stick[0], # Open
-                  min(stick), # Low
-                  max(stick), # High
-                  stick[-1] # Close
+                  coin, # coin
+                  delay/60, # frequency
+                  datetime.now().strftime('%Y-%m-%d %H:%M:%S'), # datetime
+                  float(stick[0]), # open
+                  float(min(stick)), # low
+                  float(max(stick)), # high
+                  float(stick[-1]) # close
                   )
-        print(candle)        
-        stick.clear()
+        try:
+          insert_stick(candle)
+          stick.clear()
+        except Exception:
+          print(Exception)
+
