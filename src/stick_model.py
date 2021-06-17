@@ -19,3 +19,4 @@ def insert_stick(new_stick):
   cursor.execute(sql)
   mydb.commit()
   print(cursor.rowcount, "record inserted.")
+  
