@@ -1,33 +1,34 @@
+from time import sleep
 import websocket
 import json
 import threading 
 from requests import get
-from stick_service import save_stick
+from tick_service import save_tick, live_graph_plot
 
 def start_monitoring(coin):
-  stick_1_min_data = []
-  stick_5_min_data = []
-  stick_10_min_data = []
+  tick_1_min_data = []
+  tick_5_min_data = []
+  tick_10_min_data = []
 
   sttick_1_min_thread = threading.Thread(
-                                        target=save_stick, 
-                                        args=(stick_1_min_data, 60, coin["name"]))
+                                        target=save_tick, 
+                                        args=(tick_1_min_data, 60, coin["name"]))
 
   sttick_5_min_thread = threading.Thread(
-                                        target=save_stick, 
-                                        args=(stick_5_min_data, 300, coin["name"]))      
+                                        target=save_tick, 
+                                        args=(tick_5_min_data, 300, coin["name"]))      
 
   sttick_10_min_thread = threading.Thread(
-                                        target=save_stick, 
-                                        args=(stick_5_min_data, 600, coin["name"]))                                                                       
+                                        target=save_tick, 
+                                        args=(tick_5_min_data, 600, coin["name"]))
 
   def on_message(ws, message):
     _, _, data = json.loads(message)
     pair_id, last_price, *_ = data
     if pair_id == coin["id"]:
-      stick_1_min_data.append(last_price)
-      stick_5_min_data.append(last_price)
-      stick_10_min_data.append(last_price)
+      tick_1_min_data.append(last_price)
+      tick_5_min_data.append(last_price)
+      tick_10_min_data.append(last_price)
 
 
   def on_error(ws, error):
@@ -53,14 +54,35 @@ def start_monitoring(coin):
                               on_message=on_message,
                               on_error=on_error,
                               on_close=on_close)
+  
   ws.run_forever()
+
   print("programa encerrado")
 
-def start(currency_pair, real_time_graph = False, interval = 1 ):
+def is_any_thread_alive(threads):
+    return threads.is_alive()
+
+def start(currency_pair, real_time_graph = False, frequency = 1 ):
   try:
+
     all_tickers = get("https://poloniex.com/public?command=returnTicker")
     currency = json.loads(all_tickers.text)[currency_pair]
-    start_monitoring({ "id": currency["id"], "name": currency_pair })
+    
+    monitoring_thread = threading.Thread(target = start_monitoring, 
+                                        args = ({ "id": currency["id"], "name": currency_pair }, ),
+                                        daemon = True)
+    monitoring_thread.start()
+    
+    if real_time_graph:
+      if frequency == 1 or frequency == 5 or frequency == 10:
+        live_graph_plot(currency_pair, frequency)
+      else:
+        raise ValueError('Valor de intervalo incorreto. Valores validos: 1, 5, 10')
+
+    while is_any_thread_alive(monitoring_thread):
+      sleep(1)
 
   except KeyError: 
     print("Moeda invalida ou inexistente")
+  except KeyboardInterrupt:
+    print("programa encerrado")
