@@ -2,57 +2,68 @@ import time
 import websocket
 import threading 
 import json
+import copy
 from datetime import datetime
 import mplfinance as mpf
 import pandas as pd
 import matplotlib.animation as animation
 from tick_model import insert_tick, get_ticks_data
 
-def save_tick(tick, delay, coin):
+def create_candle(currency, delay): 
+  return (
+          currency["currency_pair"], # coin
+          round(delay/60), # frequency
+          datetime.now().strftime('%Y-%m-%d %H:%M:%S'), # datetime
+          float(currency["data"][0]), # open
+          float(min(currency["data"])), # low
+          float(max(currency["data"])), # high
+          float(currency["data"][-1]) # close
+        )
+
+def save_tick(currencies, delay):
   while True:
     time.sleep(delay)
-    candle = (
-              coin, # coin
-              delay/60, # frequency
-              datetime.now().strftime('%Y-%m-%d %H:%M:%S'), # datetime
-              float(tick[0]), # open
-              float(min(tick)), # low
-              float(max(tick)), # high
-              float(tick[-1]) # close
-              )
+    candlesticks = [create_candle(currency, delay) for currency in currencies]
+
+
     try:
-      insert_tick(candle)
-      print(f'Ultimo candle de {candle[1]} min(s) adicionado:')
-      print(candle)
-      tick.clear()
+      result = insert_tick(candlesticks)
+      print(result)
+      print("Currency, Frequency, Datetime, Open, Low, High, Close")
+      print(candlesticks)
+      for index in range(len(currencies)):
+        currencies[index]["data"].clear()
+
     except Exception as exc:
       print(exc)
 
-def start_monitoring(coin):
-  tick_1_min_data = []
-  tick_5_min_data = []
-  tick_10_min_data = []
+def start_monitoring(currencies):
+  tick_1_min_data = copy.deepcopy(currencies)
+  tick_5_min_data = copy.deepcopy(currencies)
+  tick_10_min_data = copy.deepcopy(currencies)
 
   sttick_1_min_thread = threading.Thread(
                                         target=save_tick, 
-                                        args=(tick_1_min_data, 60, coin["name"]))
+                                        args=(tick_1_min_data, 60, ))
 
   sttick_5_min_thread = threading.Thread(
                                         target=save_tick, 
-                                        args=(tick_5_min_data, 300, coin["name"]))      
+                                        args=(tick_5_min_data, 300, ))      
 
   sttick_10_min_thread = threading.Thread(
                                         target=save_tick, 
-                                        args=(tick_10_min_data, 600, coin["name"]))
+                                        args=(tick_10_min_data, 600, ))
 
   def on_message(ws, message):
     _, _, data = json.loads(message)
     pair_id, last_price, *_ = data
-    if pair_id == coin["id"]:
-      tick_1_min_data.append(last_price)
-      tick_5_min_data.append(last_price)
-      tick_10_min_data.append(last_price)
 
+    for index in range(len(currencies)):
+      if pair_id == currencies[index]["id"]:
+
+        tick_1_min_data[index]["data"].append(last_price)
+        tick_5_min_data[index]["data"].append(last_price)
+        tick_10_min_data[index]["data"].append(last_price)
 
   def on_error(ws, error):
     print(error)
@@ -91,11 +102,12 @@ def live_graph_plot(currency_pair, frequency):
   ax.set(xlabel='Tempo (hh:mm)', ylabel=f'{currency_pair} USD')
 
   def animate(i):
-    data = get_ticks_data(frequency)
-    data.index = pd.DatetimeIndex(data['datetime'])
-    ax.clear()
-    ax.set(xlabel='Tempo (hh:mm)', ylabel=f'{currency_pair} USD')
-    mpf.plot(data, ax=ax, type='candle')
+    data = get_ticks_data(currency_pair, frequency)
+    if not data.empty:
+      data.index = pd.DatetimeIndex(data['datetime'])
+      ax.clear()
+      ax.set(xlabel='Tempo (hh:mm)', ylabel=f'{currency_pair} USD')
+      mpf.plot(data, ax=ax, type='candle')
 
   _ = animation.FuncAnimation(fig, animate, interval=5000)
   mpf.show()

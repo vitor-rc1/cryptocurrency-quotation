@@ -4,6 +4,7 @@ import pandas as pd
 def connection():
   mydb = mysql.connector.connect(
   host="cryptocurrency-quotation_db_1",
+  # host="localhost",
   user="root",
   password="smartt",
   database="smartt-graph"
@@ -26,21 +27,22 @@ def create_table():
   PRIMARY KEY (`id`));
   """)
 
-def insert_tick(new_tick):
+def insert_tick(candlesticks):
   mydb, cursor = connection()
-  sql = f"""
+  sql = """
   INSERT INTO candlesticks (coin, frequency, datetime, open, low, high, close) 
-  VALUES {new_tick};
+  VALUES (%s, %s, %s, %s, %s, %s, %s);
   """
-  cursor.execute(sql)
+  cursor.executemany(sql, candlesticks)
   mydb.commit()
-  print(cursor.rowcount, "record inserted.")
+  return(f"{cursor.rowcount} record inserted.")
 
-def get_ticks_data(frequency):
+def get_ticks_data(currency_pair, frequency):
   mydb, cursor = connection()
   sql = f"""
             SELECT datetime, open, high, low, close 
-            FROM candlesticks WHERE frequency = {frequency}
+            FROM candlesticks WHERE frequency = {frequency} and coin = '{currency_pair}'
             ORDER BY id DESC
-            LIMIT 10;"""
+            LIMIT 10;
+          """
   return pd.read_sql(sql, con=mydb).sort_values(by=['datetime'])
