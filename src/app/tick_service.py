@@ -25,6 +25,8 @@ def save_tick(currencies, delay):
   while True:
     time.sleep(delay)
     candlesticks = [create_candle(currency, delay) for currency in currencies]
+    for index in range(len(currencies)):
+      currencies[index]["data"].clear()
 
 
     try:
@@ -33,8 +35,6 @@ def save_tick(currencies, delay):
       headers = ["Currency", "Frequency", "Datetime", "Open", "Low", "High", "Close"]
       print(tabulate(candlesticks, headers=headers))
 
-      for index in range(len(currencies)):
-        currencies[index]["data"].clear()
 
     except Exception as exc:
       print(exc)

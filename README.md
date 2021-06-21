@@ -8,7 +8,7 @@
 
 ## Para que serve essa aplicação?
   - Serve para coletar candlesticks a partir da [Poloniex Public API](https://docs.poloniex.com/#introduction) e salva-los no banco
-  - São guardados os candles de 1, 5 e 10 mins respectivamentes
+  - São guardados os candles de 1, 5 e 10 mins respectivamente
   - Monitorar os candlesticks salvos 
   - Também é possivel monitorar via grafico os ultimos 10 candlesticks salvos
 
@@ -71,7 +71,7 @@ Você pode rodar localmente ou via Docker.
 
 
   ### Docker
-  - Certifique de ter instalado o Docker e o Docker-compose
+  - Certifique-se de ter instalado o Docker e o Docker-compose
   - Vá no arquivo `monitoramento.py` e passe uma lista das moedas a serem monitoradas. Só é aceito uma lista como parâmetro, mesmo que queira monitorar somente uma moeda. Você pode verificar quais moedas podem ser utilizadas [aqui](https://docs.poloniex.com/#currency-pair-ids)
   - Certifique-se que o arquivo `src/app/tick_model.py` esteja com a seguinte configuração
   
@@ -99,11 +99,11 @@ Você pode rodar localmente ou via Docker.
   - Entender o fluxo da linguagem python
   - Entender o uso de threads e como finaliza-las
   - Executar arquivos de outras pastas
-  - Criar os teste
+  - Criar os testes
   - Entender o Docker e como subir os containers utilizando o docker-compose
 
 ## Pontos a melhorar
- - Organizar os arquivos em pastas: esse foi um desafio que ainda não foi possivel superar e que impactou muito na criação dos testes, pois sempre dava problema de ModuleNotFoundError ao executar os testes. Por isso que todos os arquivos `.py` ficaram na mesma pasta
+ - Organizar os arquivos em pastas: esse foi um desafio que ainda não foi possivel superar e que impactou muito na criação dos testes, pois sempre dava problema de ModuleNotFoundError ao executar os testes. Por isso que todos os arquivos e os arquivos de teste ficaram na mesma pasta
  - Entender melhor os mocks e melhorar a cobertura de testes
- - Diminuir a responsabilidade de algumas funções que estão ferindo o principio S do SOLID
+ - Diminuir a responsabilidade de algumas funções que não estão respeitando o princípio 'Single Responsiblity Principle'
  - Criar um sistema de monitoramento em tempo real com a criação de uma API com Flask e o Socket.IO

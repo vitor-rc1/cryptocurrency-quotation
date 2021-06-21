@@ -4,10 +4,8 @@ import pandas as pd
 def connection():
   mydb = mysql.connector.connect(
   host="cryptocurrency-quotation_db_1",
-  # host="localhost",
   user="root",
   password="smartt",
-  # password="hdq001@@",
   database="smartt-graph"
   )
   cursor = mydb.cursor()

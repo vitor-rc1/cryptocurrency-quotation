@@ -26,7 +26,7 @@ def start(currency_pair):
     return "Programa finalizado"
 
   except KeyError: 
-    raise(KeyError("Uma das moedas passada é invalida ou inexistente"))
+    raise(KeyError("Uma das moedas passadas é invalida ou inexistente"))
   except KeyboardInterrupt:
     print("programa encerrado")
   except Exception as exc:
