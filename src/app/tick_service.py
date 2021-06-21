@@ -6,6 +6,7 @@ import copy
 from datetime import datetime
 import mplfinance as mpf
 import pandas as pd
+from tabulate import tabulate
 import matplotlib.animation as animation
 from tick_model import insert_tick, get_ticks_data
 
@@ -27,10 +28,11 @@ def save_tick(currencies, delay):
 
 
     try:
-      result = insert_tick(candlesticks)
-      print(result)
-      print("Currency, Frequency, Datetime, Open, Low, High, Close")
-      print(candlesticks)
+      insert_tick(candlesticks)
+
+      headers = ["Currency", "Frequency", "Datetime", "Open", "Low", "High", "Close"]
+      print(tabulate(candlesticks, headers=headers))
+
       for index in range(len(currencies)):
         currencies[index]["data"].clear()
 
@@ -69,7 +71,7 @@ def start_monitoring(currencies):
     print(error)
 
   def on_close():
-    print("programa encerrado")
+    print("Programa encerrado")
 
   def on_open(ws):
     ws.send(json.dumps({ "command": "subscribe", "channel": 1002 }))
@@ -80,7 +82,8 @@ def start_monitoring(currencies):
     sttick_5_min_thread.start()
     sttick_10_min_thread.daemon = True
     sttick_10_min_thread.start()
-    print("Monitoramento iniciado")
+
+    print("\nMonitoramento iniciado\n")
 
 
   ws = websocket.WebSocketApp("wss://api2.poloniex.com",

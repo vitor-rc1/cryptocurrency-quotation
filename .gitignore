@@ -1,3 +1,5 @@
 db/
 .vscode/
 src/app/__pycache__/
+test/__pycache__/
+.pytest_cache/

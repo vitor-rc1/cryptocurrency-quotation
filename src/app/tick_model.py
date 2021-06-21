@@ -7,6 +7,7 @@ def connection():
   # host="localhost",
   user="root",
   password="smartt",
+  # password="hdq001@@",
   database="smartt-graph"
   )
   cursor = mydb.cursor()
